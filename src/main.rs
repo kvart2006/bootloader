@@ -18,10 +18,6 @@ use x86_64::structures::paging::{Page, PageTableFlags, PhysFrame, PhysFrameRange
 use x86_64::ux::u9;
 use x86_64::{PhysAddr, VirtAddr};
 
-/// The offset into the virtual address space where the physical memory is mapped if
-/// the `map_physical_memory` is activated.
-const PHYSICAL_MEMORY_OFFSET: u64 = 0o_177777_770_000_000_000_0000;
-
 global_asm!(include_str!("stage_1.s"));
 global_asm!(include_str!("stage_2.s"));
 global_asm!(include_str!("e820.s"));
@@ -231,28 +227,6 @@ fn load_elf(
         .flush();
         page
     };
-
-    if cfg!(feature = "map_physical_memory") {
-        fn virt_for_phys(phys: PhysAddr) -> VirtAddr {
-            VirtAddr::new(phys.as_u64() + PHYSICAL_MEMORY_OFFSET)
-        }
-
-        let start_frame = PhysFrame::<Size2MiB>::containing_address(PhysAddr::new(0));
-        let end_frame = PhysFrame::<Size2MiB>::containing_address(PhysAddr::new(max_phys_addr));
-        for frame in PhysFrame::range_inclusive(start_frame, end_frame) {
-            let page = Page::containing_address(virt_for_phys(frame.start_address()));
-            let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-            page_table::map_page(
-                page,
-                frame,
-                flags,
-                &mut rec_page_table,
-                &mut frame_allocator,
-            )
-            .expect("Mapping of bootinfo page failed")
-            .flush();
-        }
-    }
 
     // Construct boot info structure.
     let mut boot_info = BootInfo::new(memory_map, recursive_page_table_addr.as_u64(), PHYSICAL_MEMORY_OFFSET);
