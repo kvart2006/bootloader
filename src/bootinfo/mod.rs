@@ -31,7 +31,6 @@ pub struct BootInfo {
     pub memory_map: MemoryMap,
     ///
     /// The virtual address of the recursively mapped level 4 page table.
-    ///
     pub recursive_page_table_addr: u64,
 }
 
