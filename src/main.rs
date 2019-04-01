@@ -261,7 +261,7 @@ fn enable_nxe_bit() {
 
 fn enable_write_protect_bit() {
     use x86_64::registers::control::{Cr0, Cr0Flags};
-    unsafe { Cr0::update(|cr0| *cr0 |= Cr0Flags::WRITE_PROTECT) };
+    unsafe { Cr0::update(|cr0| *cr0 |= Cr0Flags::WP) };
 }
 
 #[panic_handler]
