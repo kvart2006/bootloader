@@ -24,8 +24,6 @@ features = ["unicode"]
 [features]
 default = []
 vga_320x200 = []
-recursive_page_table = []
-map_physical_memory = []
 
 [profile.dev]
 panic = "abort"
@@ -34,6 +32,3 @@ panic = "abort"
 panic = "abort"
 lto = false
 debug = true
-
-[package.metadata.docs.rs]
-features = [ "recursive_page_table", "map_physical_memory" ]
