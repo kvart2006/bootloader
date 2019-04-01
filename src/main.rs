@@ -18,6 +18,10 @@ use x86_64::structures::paging::{Page, PageTableFlags, PhysFrame, PhysFrameRange
 use x86_64::ux::u9;
 use x86_64::{PhysAddr, VirtAddr};
 
+/// The offset into the virtual address space where the physical memory is mapped if
+/// the `map_physical_memory` is activated.
+const PHYSICAL_MEMORY_OFFSET: u64 = 0o_177777_770_000_000_000_0000;
+
 global_asm!(include_str!("stage_1.s"));
 global_asm!(include_str!("stage_2.s"));
 global_asm!(include_str!("e820.s"));
@@ -238,16 +242,6 @@ fn load_elf(
 
     // Make sure that the kernel respects the write-protection bits, even when in ring 0.
     enable_write_protect_bit();
-
-    if cfg!(not(feature = "recursive_page_table")) {
-        // unmap recursive entry
-        rec_page_table
-            .unmap(Page::<Size4KiB>::containing_address(recursive_page_table_addr))
-            .expect("error deallocating recursive entry")
-            .1
-            .flush();
-        mem::drop(rec_page_table);
-    }
 
     let entry_point = VirtAddr::new(entry_point);
 
